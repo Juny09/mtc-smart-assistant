@@ -6,6 +6,7 @@ import 'package:mtc_sales_app/features/cart/screens/cart_screen.dart';
 import 'package:mtc_sales_app/features/cart/screens/cart_scan_screen.dart';
 import 'package:mtc_sales_app/features/product/models/product.dart';
 import 'package:mtc_sales_app/features/product/providers/product_repository.dart';
+import 'package:mtc_sales_app/features/camera/screens/identify_product_screen.dart';
 import 'package:mtc_sales_app/features/camera/screens/product_camera_screen.dart';
 import 'package:mtc_sales_app/features/tools/screens/price_calculator_screen.dart';
 import 'package:mtc_sales_app/core/auth/auth_service.dart';
@@ -102,6 +103,17 @@ class _ProductSearchScreenState extends ConsumerState<ProductSearchScreen> {
               Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (_) => const CartScanScreen()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.center_focus_weak),
+            tooltip: 'Identify Product',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const IdentifyProductScreen(),
+                ),
+              );
             },
           ),
           IconButton(

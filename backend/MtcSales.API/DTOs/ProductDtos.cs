@@ -24,12 +24,10 @@ public class CreateProductRequest
     public int? CategoryId { get; set; }
 }
 
-public class UpdateProductRequest
+public class IdentifyProductResponse
 {
-    public string? Name { get; set; }
-    public string? Description { get; set; }
-    public decimal? SuggestedPrice { get; set; }
-    public decimal? CostPrice { get; set; }
-    public string? ImageUrl { get; set; }
-    public int? CategoryId { get; set; }
+    public string ProductId { get; set; } = string.Empty;
+    public string ProductCode { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public double Confidence { get; set; }
 }
