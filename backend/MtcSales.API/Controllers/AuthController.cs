@@ -41,6 +41,26 @@ public class AuthController : ControllerBase
     }
 
     // TODO: Remove this in production
+    [HttpPost("seed")]
+    public async Task<ActionResult> SeedUsers()
+    {
+        if (!await _context.Users.AnyAsync())
+        {
+            var admin = new MtcSales.API.Models.User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                Role = "admin",
+                FullName = "Administrator"
+            };
+            _context.Users.Add(admin);
+            await _context.SaveChangesAsync();
+            return Ok("Seeded admin user (password: admin123)");
+        }
+        return Ok("Users already exist");
+    }
+
     [HttpGet("hash")]
     public ActionResult<string> HashPassword(string password)
     {

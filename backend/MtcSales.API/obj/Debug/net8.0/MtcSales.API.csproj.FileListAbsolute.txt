@@ -104,3 +104,4 @@
 /Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/obj/Debug/net8.0/MtcSales.API.pdb
 /Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/obj/Debug/net8.0/MtcSales.API.genruntimeconfig.cache
 /Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/obj/Debug/net8.0/ref/MtcSales.API.dll
+/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/obj/Debug/net8.0/MtcSales.API.sourcelink.json
