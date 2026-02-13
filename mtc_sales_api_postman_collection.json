@@ -1,0 +1,165 @@
+{
+  "info": {
+    "_postman_id": "mtc-sales-app-api",
+    "name": "MTC Sales App API",
+    "description": "API Documentation for MTC Sales App (Machinery & Parts)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"Admin123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate user and get JWT token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/product?keyword=Water",
+              "host": ["{{baseUrl}}"],
+              "path": ["product"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Water",
+                  "description": "Search by name, code or description"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/product/WP-2024-X",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "WP-2024-X"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reveal Cost (Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product/WP-2024-X/reveal-cost",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "WP-2024-X", "reveal-cost"]
+            },
+            "description": "Requires JWT Token. Returns cost price."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Create Cart",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{cartId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{cartId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"<PRODUCT_UUID>\",\n    \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{cartId}}/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{cartId}}", "items"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5263/api",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cartId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

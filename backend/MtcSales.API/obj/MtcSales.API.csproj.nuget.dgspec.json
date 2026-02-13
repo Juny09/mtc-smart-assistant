@@ -1,0 +1,88 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/MtcSales.API.csproj": {}
+  },
+  "projects": {
+    "/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/MtcSales.API.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/MtcSales.API.csproj",
+        "projectName": "MtcSales.API",
+        "projectPath": "/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/MtcSales.API.csproj",
+        "packagesPath": "/Users/junyuan78/.nuget/packages/",
+        "outputPath": "/Users/junyuan78/Desktop/mtc/mtc-smart-assistant/backend/MtcSales.API/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/junyuan78/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet@8/8.0.120/libexec/sdk/8.0.120/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

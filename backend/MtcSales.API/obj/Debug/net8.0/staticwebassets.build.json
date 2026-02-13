@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "B1TZFtfprtvVbHxScJWkoQzyubJPCRlad4ZZqDDlaz8=",
+  "Source": "MtcSales.API",
+  "BasePath": "_content/MtcSales.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
