@@ -80,6 +80,10 @@ public class Product
     [Column("cost_price")]
     public decimal? CostPrice { get; set; }
 
+    [Column("cost_code")]
+    [MaxLength(20)]
+    public string? CostCode { get; set; }
+
     [Column("image_url")]
     public string? ImageUrl { get; set; }
 
@@ -88,8 +92,27 @@ public class Product
 
     [ForeignKey("CategoryId")]
     public Category? Category { get; set; }
-    
-    // Vector fields are handled by specialized libraries or raw SQL usually, 
-    // but for now we can map them if needed or skip. 
-    // Npgsql supports vector mapping.
+
+    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+}
+
+[Table("product_images")]
+public class ProductImage
+{
+    [Key]
+    [Column("id")]
+    public Guid Id { get; set; }
+
+    [Column("product_id")]
+    public Guid ProductId { get; set; }
+
+    [ForeignKey("ProductId")]
+    public Product? Product { get; set; }
+
+    [Column("image_url")]
+    [Required]
+    public string ImageUrl { get; set; } = string.Empty;
+
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -6,7 +6,10 @@ import 'package:mtc_sales_app/features/cart/screens/cart_screen.dart';
 import 'package:mtc_sales_app/features/cart/screens/cart_scan_screen.dart';
 import 'package:mtc_sales_app/features/product/models/product.dart';
 import 'package:mtc_sales_app/features/product/providers/product_repository.dart';
+import 'package:mtc_sales_app/features/camera/screens/product_camera_screen.dart';
+import 'package:mtc_sales_app/features/tools/screens/price_calculator_screen.dart';
 import 'package:mtc_sales_app/core/auth/auth_service.dart';
+import 'package:mtc_sales_app/core/auth/login_screen.dart';
 import 'package:mtc_sales_app/features/admin/screens/admin_product_create_screen.dart';
 
 final productsProvider =
@@ -72,6 +75,16 @@ class _ProductSearchScreenState extends ConsumerState<ProductSearchScreen> {
       appBar: AppBar(
         title: const Text('MTC 商品查询'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.calculate),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PriceCalculatorScreen(),
+                ),
+              );
+            },
+          ),
           if (userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.add),
@@ -310,50 +323,69 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                     ),
                   ],
                 ),
-                InkWell(
-                  onTap: _isCostVisible ? null : _revealCost,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.camera_alt_outlined),
+                      tooltip: 'Train Model',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ProductCameraScreen(product: widget.product),
+                          ),
+                        );
+                      },
                     ),
-                    decoration: BoxDecoration(
-                      color: _isCostVisible
-                          ? Colors.red.shade50
-                          : Colors.grey.shade100,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _isCostVisible ? null : _revealCost,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _isCostVisible
-                            ? Colors.red.shade200
-                            : Colors.grey.shade300,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _isCostVisible
+                              ? Colors.red.shade50
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _isCostVisible
+                                ? Colors.red.shade200
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '成本价 (Hidden)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: _isCostVisible
+                                    ? Colors.red.shade700
+                                    : Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _isCostVisible
+                                  ? '\$${_fetchedCostPrice?.toStringAsFixed(2) ?? "..."}'
+                                  : '******',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: _isCostVisible
+                                    ? Colors.red
+                                    : Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '成本价 (Hidden)',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _isCostVisible
-                                ? Colors.red.shade700
-                                : Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _isCostVisible
-                              ? '\$${_fetchedCostPrice?.toStringAsFixed(2) ?? "..."}'
-                              : '******',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: _isCostVisible ? Colors.red : Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),

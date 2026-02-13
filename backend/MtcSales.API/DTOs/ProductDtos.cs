@@ -17,6 +17,8 @@ public class CreateProductRequest
 
     public decimal? CostPrice { get; set; }
 
+    public string? CostCode { get; set; }
+
     public string? ImageUrl { get; set; }
 
     public int? CategoryId { get; set; }

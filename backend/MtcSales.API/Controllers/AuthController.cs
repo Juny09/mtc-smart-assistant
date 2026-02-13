@@ -61,6 +61,20 @@ public class AuthController : ControllerBase
         return Ok("Users already exist");
     }
 
+    [HttpPost("update-schema")]
+    public async Task<ActionResult> UpdateSchema()
+    {
+        var sqlFile = Path.Combine(Directory.GetCurrentDirectory(), "..", "update_schema_v2.sql");
+        if (!System.IO.File.Exists(sqlFile))
+        {
+            return NotFound("Schema file not found");
+        }
+
+        var sql = await System.IO.File.ReadAllTextAsync(sqlFile);
+        await _context.Database.ExecuteSqlRawAsync(sql);
+        return Ok("Schema updated successfully");
+    }
+
     [HttpGet("hash")]
     public ActionResult<string> HashPassword(string password)
     {

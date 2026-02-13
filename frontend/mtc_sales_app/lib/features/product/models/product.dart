@@ -10,6 +10,7 @@ class Product {
   final String description;
   final double suggestedPrice;
   final double? costPrice; // Nullable, fetched only after auth
+  final String? costCode;
   final String? imageUrl;
 
   Product({
@@ -19,6 +20,7 @@ class Product {
     required this.description,
     required this.suggestedPrice,
     this.costPrice,
+    this.costCode,
     this.imageUrl,
   });
 

@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/core/theme/app_theme.dart';
 import 'package:mtc_sales_app/core/auth/login_screen.dart';
+import 'package:camera/camera.dart';
 
-void main() {
+List<CameraDescription> cameras = [];
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    debugPrint('Error initializing cameras: $e');
+  }
   runApp(const ProviderScope(child: MtcSalesApp()));
 }
 

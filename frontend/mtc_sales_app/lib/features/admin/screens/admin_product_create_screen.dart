@@ -25,6 +25,7 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
           'description': product.description,
           'suggestedPrice': product.suggestedPrice,
           'costPrice': product.costPrice,
+          'costCode': product.costCode,
           'imageUrl': product.imageUrl,
           'categoryId': 1, // Default for MVP
         },
@@ -52,6 +53,7 @@ class _AdminProductCreateScreenState
   final _descController = TextEditingController();
   final _priceController = TextEditingController();
   final _costController = TextEditingController();
+  final _costCodeController = TextEditingController();
 
   @override
   void dispose() {
@@ -60,6 +62,7 @@ class _AdminProductCreateScreenState
     _descController.dispose();
     _priceController.dispose();
     _costController.dispose();
+    _costCodeController.dispose();
     super.dispose();
   }
 
@@ -72,6 +75,9 @@ class _AdminProductCreateScreenState
       description: _descController.text,
       suggestedPrice: double.tryParse(_priceController.text) ?? 0,
       costPrice: double.tryParse(_costController.text),
+      costCode: _costCodeController.text.isNotEmpty
+          ? _costCodeController.text
+          : null,
       imageUrl: 'https://placehold.co/400x300/png?text=New+Product',
     );
 
@@ -148,6 +154,15 @@ class _AdminProductCreateScreenState
                         labelText: 'Cost Price (Secret)',
                       ),
                       keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _costCodeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Cost Code (Optional)',
+                      ),
                     ),
                   ),
                 ],
