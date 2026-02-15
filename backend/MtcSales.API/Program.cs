@@ -3,6 +3,11 @@ using MtcSales.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Render sets the PORT environment variable.
+// If running on Render, we need to bind to http://0.0.0.0:PORT
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<MtcContext>(options =>
