@@ -55,7 +55,21 @@ Render 会自动检测目录下的 `Dockerfile` 并开始构建。部署完成�
    由于 Render 原生构建 Flutter 较麻烦，推荐使用 **Vercel**。
    1. 在 Vercel 导入仓库。
    2. Root Directory 选择 `frontend/mtc_sales_app`。
-   3. Build Command: `flutter/bin/flutter build web --release` (Vercel 需要配置 Flutter 环境，或者直接提交 `build/web` 文件夹到单独的分支进行部署)。
+   3. Build Command: `flutter build web --release`
+   - **注意**: Render 默认环境可能没有 Flutter。
+   - **推荐方案**: 使用 Docker 部署 Web 版。
+   - 在 `frontend/mtc_sales_app` 下创建一个 `Dockerfile`:
+     ```dockerfile
+     FROM ghcr.io/cirruslabs/flutter:stable AS build
+     WORKDIR /app
+     COPY . .
+     RUN flutter build web --release
+
+     FROM nginx:alpine
+     COPY --from=build /app/build/web /usr/share/nginx/html
+     EXPOSE 80
+     ```
+   - 然后在 Render 上部署一个新的 Web Service，Root Directory 选 `frontend/mtc_sales_app`，Runtime 选 Docker。
 
 ### 选项 B: 移动应用 (APK/IPA)
 
