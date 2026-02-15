@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/core/api/api_client.dart';
 import 'package:mtc_sales_app/features/product/models/product.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
 
 final adminProductProvider =
     StateNotifierProvider<AdminProductNotifier, AsyncValue<void>>((ref) {
@@ -14,10 +17,11 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
 
   AdminProductNotifier(this._apiClient) : super(const AsyncValue.data(null));
 
-  Future<void> createProduct(Product product) async {
+  Future<void> createProduct(Product product, File? imageFile) async {
     state = const AsyncValue.loading();
     try {
-      await _apiClient.post(
+      // 1. Create Product
+      final response = await _apiClient.post(
         'product',
         data: {
           'code': product.code,
@@ -30,6 +34,25 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
           'categoryId': 1, // Default for MVP
         },
       );
+
+      // Get the created product ID from response
+      // Assuming response.data is the ProductDto which has Id
+      final productData = response.data;
+      final productId = productData['id'];
+
+      // 2. Upload Image if selected
+      if (imageFile != null && productId != null) {
+        String fileName = imageFile.path.split('/').last;
+        FormData formData = FormData.fromMap({
+          'file': await MultipartFile.fromFile(
+            imageFile.path,
+            filename: fileName,
+          ),
+        });
+
+        await _apiClient.post('product/$productId/images', data: formData);
+      }
+
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -54,6 +77,8 @@ class _AdminProductCreateScreenState
   final _priceController = TextEditingController();
   final _costController = TextEditingController();
   final _costCodeController = TextEditingController();
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -64,6 +89,15 @@ class _AdminProductCreateScreenState
     _costController.dispose();
     _costCodeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -78,10 +112,12 @@ class _AdminProductCreateScreenState
       costCode: _costCodeController.text.isNotEmpty
           ? _costCodeController.text
           : null,
-      imageUrl: 'https://placehold.co/400x300/png?text=New+Product',
+      imageUrl: '', // Will be updated by backend if image is uploaded
     );
 
-    await ref.read(adminProductProvider.notifier).createProduct(product);
+    await ref
+        .read(adminProductProvider.notifier)
+        .createProduct(product, _selectedImage);
 
     if (mounted) {
       final state = ref.read(adminProductProvider);
@@ -114,6 +150,39 @@ class _AdminProductCreateScreenState
           key: _formKey,
           child: Column(
             children: [
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[400]!),
+                  ),
+                  child: _selectedImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_a_photo,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Tap to upload image',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _codeController,
                 decoration: const InputDecoration(

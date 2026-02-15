@@ -11,7 +11,8 @@ class ApiClient {
   final _storage = const FlutterSecureStorage();
 
   // For Android Emulator use 10.0.2.2, for iOS Simulator use localhost
-  static const String baseUrl = 'http://localhost:5263/api/';
+  // Note: For physical devices, you must replace this with your computer's LAN IP (e.g. http://192.168.1.5:5263/api/)
+  static String baseUrl = 'http://localhost:5263/api/';
 
   ApiClient() {
     _dio = Dio(
@@ -42,6 +43,14 @@ class ApiClient {
     _dio.interceptors.add(
       LogInterceptor(requestBody: true, responseBody: true),
     );
+  }
+
+  void updateBaseUrl(String newUrl) {
+    if (!newUrl.endsWith('/')) {
+      newUrl += '/';
+    }
+    baseUrl = newUrl;
+    _dio.options.baseUrl = newUrl;
   }
 
   Future<Response> get(

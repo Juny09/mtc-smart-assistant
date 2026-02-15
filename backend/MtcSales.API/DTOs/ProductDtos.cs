@@ -31,3 +31,23 @@ public class IdentifyProductResponse
     public string ProductName { get; set; } = string.Empty;
     public double Confidence { get; set; }
 }
+
+public class ProductDto
+{
+    public Guid? Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public decimal SuggestedPrice { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+
+    public ProductDto(string code, string name, string description, decimal suggestedPrice, string imageUrl, Guid? id = null)
+    {
+        Code = code;
+        Name = name;
+        Description = description;
+        SuggestedPrice = suggestedPrice;
+        ImageUrl = imageUrl;
+        Id = id;
+    }
+}

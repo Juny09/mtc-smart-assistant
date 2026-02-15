@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mtc_sales_app/core/api/api_client.dart';
 import 'package:mtc_sales_app/core/auth/auth_service.dart';
 import 'package:mtc_sales_app/features/product/screens/product_search_screen.dart';
 
@@ -29,10 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(userProvider.notifier).login(
-            _usernameController.text,
-            _passwordController.text,
-          );
+      await ref
+          .read(userProvider.notifier)
+          .login(_usernameController.text, _passwordController.text);
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -52,9 +52,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _showSettings() async {
+    final urlController = TextEditingController(text: ApiClient.baseUrl);
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Server Settings'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'For physical devices, use your computer IP (e.g. http://192.168.1.5:5263/api/)',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: urlController,
+              decoration: const InputDecoration(labelText: 'API Base URL'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(apiClientProvider).updateBaseUrl(urlController.text);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Server URL updated')),
+              );
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.grey),
+            onPressed: _showSettings,
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

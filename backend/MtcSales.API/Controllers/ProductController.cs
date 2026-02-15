@@ -125,7 +125,8 @@ public class ProductController : ControllerBase
             product.Name,
             product.Description ?? "",
             product.SuggestedPrice,
-            product.ImageUrl ?? ""
+            product.ImageUrl ?? "",
+            product.Id
         ));
     }
 
@@ -148,7 +149,8 @@ public class ProductController : ControllerBase
                 p.Name,
                 p.Description ?? "",
                 p.SuggestedPrice,
-                p.ImageUrl ?? ""
+                p.ImageUrl ?? "",
+                p.Id
             ))
             .ToListAsync();
 
@@ -171,7 +173,8 @@ public class ProductController : ControllerBase
             product.Name,
             product.Description ?? "",
             product.SuggestedPrice,
-            product.ImageUrl ?? ""
+            product.ImageUrl ?? "",
+            product.Id
         ));
     }
 
