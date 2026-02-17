@@ -188,6 +188,62 @@ public class ProductController : ControllerBase
         ));
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProduct(Guid id, ProductDto productDto)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        product.Code = productDto.Code;
+        product.Name = productDto.Name;
+        product.Description = productDto.Description;
+        product.SuggestedPrice = productDto.SuggestedPrice;
+        product.ImageUrl = productDto.ImageUrl;
+        // Note: For simplicity, we are not updating cost price/code here yet, or category/brand
+        // In a real app, you'd likely have a specific UpdateProductRequest DTO
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ProductExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProduct(Guid id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    private bool ProductExists(Guid id)
+    {
+        return _context.Products.Any(e => e.Id == id);
+    }
+
     [HttpPost("{code}/reveal-cost")]
     public async Task<ActionResult<decimal>> RevealCost(string code)
     {

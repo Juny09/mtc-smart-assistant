@@ -42,28 +42,12 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Get the created product ID from response
-      // Assuming response.data is the ProductDto which has Id
       final productData = response.data;
       final productId = productData['id'];
 
       // 2. Upload Image if selected
       if (imageFile != null && productId != null) {
-        String fileName = imageFile.name;
-
-        MultipartFile multipartFile;
-        if (kIsWeb) {
-          final bytes = await imageFile.readAsBytes();
-          multipartFile = MultipartFile.fromBytes(bytes, filename: fileName);
-        } else {
-          multipartFile = await MultipartFile.fromFile(
-            imageFile.path,
-            filename: fileName,
-          );
-        }
-
-        FormData formData = FormData.fromMap({'file': multipartFile});
-
-        await _apiClient.post('product/$productId/images', data: formData);
+        await _uploadImage(productId, imageFile);
       }
 
       state = const AsyncValue.data(null);
@@ -71,10 +55,59 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, stack);
     }
   }
+
+  Future<void> updateProduct(Product product, XFile? imageFile) async {
+    state = const AsyncValue.loading();
+    try {
+      if (product.id == null) throw Exception('Product ID is missing');
+
+      // 1. Update Product
+      await _apiClient.put(
+        'product/${product.id}',
+        data: {
+          'code': product.code,
+          'name': product.name,
+          'description': product.description,
+          'suggestedPrice': product.suggestedPrice,
+          'costPrice': product.costPrice,
+          'costCode': product.costCode,
+          'imageUrl': product.imageUrl,
+          'categoryId': product.categoryId,
+          'brandId': product.brandId,
+        },
+      );
+
+      // 2. Upload Image if selected
+      if (imageFile != null) {
+        await _uploadImage(product.id!, imageFile);
+      }
+
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> _uploadImage(String productId, XFile imageFile) async {
+    String fileName = imageFile.name;
+    MultipartFile multipartFile;
+    if (kIsWeb) {
+      final bytes = await imageFile.readAsBytes();
+      multipartFile = MultipartFile.fromBytes(bytes, filename: fileName);
+    } else {
+      multipartFile = await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+      );
+    }
+    FormData formData = FormData.fromMap({'file': multipartFile});
+    await _apiClient.post('product/$productId/images', data: formData);
+  }
 }
 
 class AdminProductCreateScreen extends ConsumerStatefulWidget {
-  const AdminProductCreateScreen({super.key});
+  final Product? product;
+  const AdminProductCreateScreen({super.key, this.product});
 
   @override
   ConsumerState<AdminProductCreateScreen> createState() =>
@@ -94,6 +127,21 @@ class _AdminProductCreateScreenState
   int? _selectedBrandId;
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.product != null) {
+      _codeController.text = widget.product!.code;
+      _nameController.text = widget.product!.name;
+      _descController.text = widget.product!.description;
+      _priceController.text = widget.product!.suggestedPrice.toString();
+      _costController.text = widget.product!.costPrice?.toString() ?? '';
+      _costCodeController.text = widget.product!.costCode ?? '';
+      _selectedCategoryId = widget.product!.categoryId;
+      _selectedBrandId = widget.product!.brandId;
+    }
+  }
 
   @override
   void dispose() {
@@ -200,7 +248,33 @@ class _AdminProductCreateScreenState
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final isEditing = widget.product != null;
+
+    if (isEditing) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Update Product?'),
+          content: Text(
+            'Are you sure you want to update "${_nameController.text}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Update'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
     final product = Product(
+      id: widget.product?.id, // Keep ID if editing
       code: _codeController.text,
       name: _nameController.text,
       description: _descController.text,
@@ -209,14 +283,21 @@ class _AdminProductCreateScreenState
       costCode: _costCodeController.text.isNotEmpty
           ? _costCodeController.text
           : null,
-      imageUrl: '', // Will be updated by backend if image is uploaded
+      imageUrl:
+          widget.product?.imageUrl ?? '', // Keep existing URL if not changed
       categoryId: _selectedCategoryId,
       brandId: _selectedBrandId,
     );
 
-    await ref
-        .read(adminProductProvider.notifier)
-        .createProduct(product, _selectedImage);
+    if (isEditing) {
+      await ref
+          .read(adminProductProvider.notifier)
+          .updateProduct(product, _selectedImage);
+    } else {
+      await ref
+          .read(adminProductProvider.notifier)
+          .createProduct(product, _selectedImage);
+    }
 
     if (mounted) {
       final state = ref.read(adminProductProvider);
@@ -228,11 +309,45 @@ class _AdminProductCreateScreenState
           ),
         );
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Product Created!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isEditing ? 'Product Updated!' : 'Product Created!'),
+          ),
+        );
         Navigator.pop(context);
       }
+    }
+  }
+
+  Widget _buildImagePreview() {
+    if (_selectedImage != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: kIsWeb
+            ? Image.network(_selectedImage!.path, fit: BoxFit.cover)
+            : Image.file(File(_selectedImage!.path), fit: BoxFit.cover),
+      );
+    } else if (widget.product?.imageUrl != null &&
+        widget.product!.imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          widget.product!.imageUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Center(
+            child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+          ),
+        ),
+      );
+    } else {
+      return const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add_a_photo, size: 50, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('Tap to upload image', style: TextStyle(color: Colors.grey)),
+        ],
+      );
     }
   }
 
@@ -243,8 +358,12 @@ class _AdminProductCreateScreenState
     final brandsAsync = ref.watch(brandsProvider);
     final isLoading = state is AsyncLoading;
 
+    final isEditing = widget.product != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add New Product')),
+      appBar: AppBar(
+        title: Text(isEditing ? 'Edit Product' : 'Add New Product'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -261,34 +380,7 @@ class _AdminProductCreateScreenState
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey[400]!),
                   ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: kIsWeb
-                              ? Image.network(
-                                  _selectedImage!.path,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.file(
-                                  File(_selectedImage!.path),
-                                  fit: BoxFit.cover,
-                                ),
-                        )
-                      : const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_a_photo,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Tap to upload image',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                  child: _buildImagePreview(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -416,7 +508,7 @@ class _AdminProductCreateScreenState
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator()
-                      : const Text('Create Product'),
+                      : Text(isEditing ? 'Update Product' : 'Create Product'),
                 ),
               ),
             ],

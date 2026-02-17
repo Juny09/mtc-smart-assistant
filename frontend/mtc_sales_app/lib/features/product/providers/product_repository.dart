@@ -100,4 +100,33 @@ class ProductRepository {
       throw Exception('Network error: $e');
     }
   }
+
+  Future<void> deleteProduct(String id) async {
+    try {
+      await _apiClient.delete('product/$id');
+    } catch (e) {
+      throw Exception('Failed to delete product: $e');
+    }
+  }
+
+  Future<void> updateProduct(Product product) async {
+    try {
+      await _apiClient.put(
+        'product/${product.id}',
+        data: {
+          'code': product.code,
+          'name': product.name,
+          'description': product.description,
+          'suggestedPrice': product.suggestedPrice,
+          'costPrice': product.costPrice,
+          'costCode': product.costCode,
+          'imageUrl': product.imageUrl,
+          'categoryId': product.categoryId,
+          'brandId': product.brandId,
+        },
+      );
+    } catch (e) {
+      throw Exception('Failed to update product: $e');
+    }
+  }
 }
