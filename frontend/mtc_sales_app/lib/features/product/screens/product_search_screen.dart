@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pinput/pinput.dart';
 import 'package:mtc_sales_app/core/auth/biometric_service.dart';
 import 'package:mtc_sales_app/features/cart/providers/cart_provider.dart';
 import 'package:mtc_sales_app/features/cart/screens/cart_screen.dart';
@@ -278,38 +279,81 @@ class _ProductCardState extends ConsumerState<ProductCard> {
 
   Future<bool> _showPinDialog() async {
     final pinController = TextEditingController();
+    final focusNode = FocusNode();
+
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('请输入安全 PIN'),
-        content: TextField(
-          controller: pinController,
-          keyboardType: TextInputType.number,
-          obscureText: true,
-          maxLength: 6,
-          decoration: const InputDecoration(
-            hintText: '默认为 888888',
-            counterText: '',
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '请输入 6 位安全码验证身份',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            Pinput(
+              controller: pinController,
+              focusNode: focusNode,
+              length: 6,
+              autofocus: true,
+              obscureText: true,
+              obscuringWidget: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade200,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              defaultPinTheme: PinTheme(
+                width: 40,
+                height: 48,
+                textStyle: const TextStyle(
+                  fontSize: 20,
+                  color: Color.fromRGBO(30, 60, 87, 1),
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: const Color.fromRGBO(234, 239, 243, 1),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              focusedPinTheme: PinTheme(
+                width: 40,
+                height: 48,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onCompleted: (pin) {
+                if (pin == '888888') {
+                  Navigator.pop(context, true);
+                } else {
+                  pinController.clear();
+                  focusNode.requestFocus();
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('PIN 错误，请重试')));
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '提示：开发环境默认 PIN 为 888888',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // MVP Hardcoded PIN check
-              if (pinController.text == '888888') {
-                Navigator.pop(context, true);
-              } else {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('PIN 错误')));
-              }
-            },
-            child: const Text('验证'),
           ),
         ],
       ),
