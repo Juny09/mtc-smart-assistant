@@ -67,9 +67,9 @@ class _ProductSearchScreenState extends ConsumerState<ProductSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productsAsyncValue = _currentQuery.isEmpty
-        ? const AsyncValue.data(<Product>[])
-        : ref.watch(productsProvider(_currentQuery));
+    // Always watch productsProvider to fetch data.
+    // If query is empty, backend returns all products.
+    final productsAsyncValue = ref.watch(productsProvider(_currentQuery));
     final userRole = ref.watch(userProvider).role;
 
     return Scaffold(
@@ -142,14 +142,7 @@ class _ProductSearchScreenState extends ConsumerState<ProductSearchScreen> {
           Expanded(
             child: productsAsyncValue.when(
               data: (products) {
-                if (products.isEmpty && _currentQuery.isNotEmpty) {
-                  return Center(
-                    child: Text(
-                      '未找到 "$_currentQuery" 相关商品',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
-                  );
-                } else if (products.isEmpty) {
+                if (products.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -161,7 +154,9 @@ class _ProductSearchScreenState extends ConsumerState<ProductSearchScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '请输入商品代码或关键词开始查询',
+                          _currentQuery.isNotEmpty
+                              ? '未找到 "$_currentQuery" 相关商品'
+                              : '暂无商品数据',
                           style: TextStyle(color: Colors.grey.shade600),
                         ),
                       ],
