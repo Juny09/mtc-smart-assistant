@@ -25,14 +25,14 @@ class BiometricService {
   }
 
   Future<bool> authenticate({required String reason}) async {
-    // Bypass auth on Web for MVP demo purposes, or implement a simple password dialog
-    if (kIsWeb) return true;
+    // Web: Return false to trigger manual PIN fallback in UI
+    if (kIsWeb) return false;
 
     try {
       final bool didAuthenticate = await _auth.authenticate(
         localizedReason: reason,
         options: const AuthenticationOptions(
-          biometricOnly: true,
+          biometricOnly: false, // Allow PIN/Pattern fallback on Mobile
           stickyAuth: true,
         ),
       );

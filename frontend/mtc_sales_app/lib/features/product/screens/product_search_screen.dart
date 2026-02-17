@@ -220,8 +220,15 @@ class _ProductCardState extends ConsumerState<ProductCard> {
   Future<void> _revealCost() async {
     final authService = ref.read(biometricServiceProvider);
 
-    // In production, we would call the backend here AFTER auth
-    final authenticated = await authService.authenticate(reason: '请验证身份以查看成本价');
+    // Try biometric/device auth first
+    bool authenticated = await authService.authenticate(reason: '请验证身份以查看成本价');
+
+    // If failed (or on Web), fallback to manual PIN dialog
+    if (!authenticated) {
+      if (mounted) {
+        authenticated = await _showPinDialog();
+      }
+    }
 
     if (authenticated) {
       try {
@@ -230,19 +237,21 @@ class _ProductCardState extends ConsumerState<ProductCard> {
             .read(productRepositoryProvider)
             .getCostPrice(widget.product.code);
 
-        setState(() {
-          _isCostVisible = true;
-          _fetchedCostPrice = cost;
-        });
+        if (mounted) {
+          setState(() {
+            _isCostVisible = true;
+            _fetchedCostPrice = cost;
+          });
 
-        // Auto-hide after 10 seconds
-        Future.delayed(const Duration(seconds: 10), () {
-          if (mounted) {
-            setState(() {
-              _isCostVisible = false;
-            });
-          }
-        });
+          // Auto-hide after 10 seconds
+          Future.delayed(const Duration(seconds: 10), () {
+            if (mounted) {
+              setState(() {
+                _isCostVisible = false;
+              });
+            }
+          });
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -257,6 +266,47 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         ).showSnackBar(const SnackBar(content: Text('验证失败，无法查看成本价')));
       }
     }
+  }
+
+  Future<bool> _showPinDialog() async {
+    final pinController = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('请输入安全 PIN'),
+        content: TextField(
+          controller: pinController,
+          keyboardType: TextInputType.number,
+          obscureText: true,
+          maxLength: 6,
+          decoration: const InputDecoration(
+            hintText: '默认为 888888',
+            counterText: '',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // MVP Hardcoded PIN check
+              if (pinController.text == '888888') {
+                Navigator.pop(context, true);
+              } else {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('PIN 错误')));
+              }
+            },
+            child: const Text('验证'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   @override
