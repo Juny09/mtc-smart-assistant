@@ -133,12 +133,20 @@ class _AdminProductCreateScreenState
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                await ref
-                    .read(productRepositoryProvider)
-                    .createCategory(controller.text);
-                // Refresh provider
-                ref.invalidate(categoriesProvider);
-                if (mounted) Navigator.pop(context);
+                try {
+                  await ref
+                      .read(productRepositoryProvider)
+                      .createCategory(controller.text);
+                  // Refresh provider
+                  ref.invalidate(categoriesProvider);
+                  if (context.mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to add category: $e')),
+                    );
+                  }
+                }
               }
             },
             child: const Text('Add'),
@@ -166,12 +174,20 @@ class _AdminProductCreateScreenState
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                await ref
-                    .read(productRepositoryProvider)
-                    .createBrand(controller.text);
-                // Refresh provider
-                ref.invalidate(brandsProvider);
-                if (mounted) Navigator.pop(context);
+                try {
+                  await ref
+                      .read(productRepositoryProvider)
+                      .createBrand(controller.text);
+                  // Refresh provider
+                  ref.invalidate(brandsProvider);
+                  if (context.mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to add brand: $e')),
+                    );
+                  }
+                }
               }
             },
             child: const Text('Add'),
