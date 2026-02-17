@@ -103,7 +103,8 @@ public class ProductController : ControllerBase
             CostPrice = request.CostPrice,
             CostCode = request.CostCode,
             ImageUrl = request.ImageUrl,
-            CategoryId = request.CategoryId
+            CategoryId = request.CategoryId,
+            BrandId = request.BrandId
         };
 
         // Auto-generate CostCode if missing
@@ -133,7 +134,10 @@ public class ProductController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts([FromQuery] string? keyword)
     {
-        var query = _context.Products.AsQueryable();
+        var query = _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
@@ -150,7 +154,9 @@ public class ProductController : ControllerBase
                 p.Description ?? "",
                 p.SuggestedPrice,
                 p.ImageUrl ?? "",
-                p.Id
+                p.Id,
+                p.Category != null ? p.Category.Name : null,
+                p.Brand != null ? p.Brand.Name : null
             ))
             .ToListAsync();
 
@@ -161,6 +167,8 @@ public class ProductController : ControllerBase
     public async Task<ActionResult<ProductDto>> GetProduct(string code)
     {
         var product = await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
             .FirstOrDefaultAsync(p => p.Code == code);
 
         if (product == null)
@@ -174,7 +182,9 @@ public class ProductController : ControllerBase
             product.Description ?? "",
             product.SuggestedPrice,
             product.ImageUrl ?? "",
-            product.Id
+            product.Id,
+            product.Category?.Name,
+            product.Brand?.Name
         ));
     }
 

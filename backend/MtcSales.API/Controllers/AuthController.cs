@@ -64,15 +64,35 @@ public class AuthController : ControllerBase
     [HttpPost("update-schema")]
     public async Task<ActionResult> UpdateSchema()
     {
-        var sqlFile = Path.Combine(Directory.GetCurrentDirectory(), "..", "update_schema_v2.sql");
-        if (!System.IO.File.Exists(sqlFile))
+        // Try v3 first, then v2, then fail
+        var sqlFiles = new[] { "update_schema_v3.sql", "update_schema_v2.sql" };
+        string? sqlFile = null;
+
+        foreach (var file in sqlFiles)
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "..", file);
+            if (System.IO.File.Exists(path))
+            {
+                sqlFile = path;
+                break;
+            }
+            // Also check current directory (for Docker)
+            path = Path.Combine(Directory.GetCurrentDirectory(), file);
+            if (System.IO.File.Exists(path))
+            {
+                sqlFile = path;
+                break;
+            }
+        }
+
+        if (sqlFile == null)
         {
             return NotFound("Schema file not found");
         }
 
         var sql = await System.IO.File.ReadAllTextAsync(sqlFile);
         await _context.Database.ExecuteSqlRawAsync(sql);
-        return Ok("Schema updated successfully");
+        return Ok($"Schema updated successfully using {Path.GetFileName(sqlFile)}");
     }
 
     [HttpGet("hash")]

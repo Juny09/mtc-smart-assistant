@@ -22,6 +22,20 @@ public class CreateProductRequest
     public string? ImageUrl { get; set; }
 
     public int? CategoryId { get; set; }
+
+    public int? BrandId { get; set; }
+}
+
+public class BrandDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+public class CategoryDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public class IdentifyProductResponse
@@ -40,8 +54,10 @@ public class ProductDto
     public string Description { get; set; } = string.Empty;
     public decimal SuggestedPrice { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
+    public string? CategoryName { get; set; }
+    public string? BrandName { get; set; }
 
-    public ProductDto(string code, string name, string description, decimal suggestedPrice, string imageUrl, Guid? id = null)
+    public ProductDto(string code, string name, string description, decimal suggestedPrice, string imageUrl, Guid? id = null, string? categoryName = null, string? brandName = null)
     {
         Code = code;
         Name = name;
@@ -49,5 +65,7 @@ public class ProductDto
         SuggestedPrice = suggestedPrice;
         ImageUrl = imageUrl;
         Id = id;
+        CategoryName = categoryName;
+        BrandName = brandName;
     }
 }

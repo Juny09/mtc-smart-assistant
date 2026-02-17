@@ -54,6 +54,19 @@ public class Category
     public Category? Parent { get; set; }
 }
 
+[Table("brands")]
+public class Brand
+{
+    [Key]
+    [Column("id")]
+    public int Id { get; set; }
+
+    [Column("name")]
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+}
+
 [Table("products")]
 public class Product
 {
@@ -92,6 +105,12 @@ public class Product
 
     [ForeignKey("CategoryId")]
     public Category? Category { get; set; }
+
+    [Column("brand_id")]
+    public int? BrandId { get; set; }
+
+    [ForeignKey("BrandId")]
+    public Brand? Brand { get; set; }
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 }
