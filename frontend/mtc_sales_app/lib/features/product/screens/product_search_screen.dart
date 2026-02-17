@@ -312,6 +312,48 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               widget.product.description,
               style: TextStyle(color: Colors.grey.shade600),
             ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                if (widget.product.categoryName != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      widget.product.categoryName!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                  ),
+                if (widget.product.brandName != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      widget.product.brandName!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade800,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),

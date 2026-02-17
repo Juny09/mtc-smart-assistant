@@ -12,6 +12,10 @@ class Product {
   final double? costPrice; // Nullable, fetched only after auth
   final String? costCode;
   final String? imageUrl;
+  final int? categoryId;
+  final int? brandId;
+  final String? categoryName;
+  final String? brandName;
 
   Product({
     this.id,
@@ -22,6 +26,10 @@ class Product {
     this.costPrice,
     this.costCode,
     this.imageUrl,
+    this.categoryId,
+    this.brandId,
+    this.categoryName,
+    this.brandName,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) =>

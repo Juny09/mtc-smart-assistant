@@ -6,6 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 
+import 'package:mtc_sales_app/features/product/models/category.dart';
+import 'package:mtc_sales_app/features/product/models/brand.dart';
+import 'package:mtc_sales_app/features/product/providers/product_repository.dart';
+
 final adminProductProvider =
     StateNotifierProvider<AdminProductNotifier, AsyncValue<void>>((ref) {
       final apiClient = ref.read(apiClientProvider);
@@ -31,7 +35,8 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
           'costPrice': product.costPrice,
           'costCode': product.costCode,
           'imageUrl': product.imageUrl,
-          'categoryId': 1, // Default for MVP
+          'categoryId': product.categoryId,
+          'brandId': product.brandId,
         },
       );
 
@@ -77,6 +82,8 @@ class _AdminProductCreateScreenState
   final _priceController = TextEditingController();
   final _costController = TextEditingController();
   final _costCodeController = TextEditingController();
+  int? _selectedCategoryId;
+  int? _selectedBrandId;
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -100,6 +107,72 @@ class _AdminProductCreateScreenState
     }
   }
 
+  Future<void> _showAddCategoryDialog() async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Category'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Category Name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.isNotEmpty) {
+                await ref
+                    .read(productRepositoryProvider)
+                    .createCategory(controller.text);
+                // Refresh provider
+                ref.invalidate(categoriesProvider);
+                if (mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAddBrandDialog() async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Brand'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Brand Name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.isNotEmpty) {
+                await ref
+                    .read(productRepositoryProvider)
+                    .createBrand(controller.text);
+                // Refresh provider
+                ref.invalidate(brandsProvider);
+                if (mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -113,6 +186,8 @@ class _AdminProductCreateScreenState
           ? _costCodeController.text
           : null,
       imageUrl: '', // Will be updated by backend if image is uploaded
+      categoryId: _selectedCategoryId,
+      brandId: _selectedBrandId,
     );
 
     await ref
@@ -140,6 +215,8 @@ class _AdminProductCreateScreenState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(adminProductProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final brandsAsync = ref.watch(brandsProvider);
     final isLoading = state is AsyncLoading;
 
     return Scaffold(
@@ -201,6 +278,67 @@ class _AdminProductCreateScreenState
                 controller: _descController,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              // Categories
+              Row(
+                children: [
+                  Expanded(
+                    child: categoriesAsync.when(
+                      data: (categories) => DropdownButtonFormField<int>(
+                        value: _selectedCategoryId,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
+                        items: categories
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedCategoryId = v),
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: _showAddCategoryDialog,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Brands
+              Row(
+                children: [
+                  Expanded(
+                    child: brandsAsync.when(
+                      data: (brands) => DropdownButtonFormField<int>(
+                        value: _selectedBrandId,
+                        decoration: const InputDecoration(labelText: 'Brand'),
+                        items: brands
+                            .map(
+                              (b) => DropdownMenuItem(
+                                value: b.id,
+                                child: Text(b.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _selectedBrandId = v),
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: _showAddBrandDialog,
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Row(

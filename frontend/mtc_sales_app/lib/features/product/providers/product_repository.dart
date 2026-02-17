@@ -1,10 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/core/api/api_client.dart';
 import 'package:mtc_sales_app/features/product/models/product.dart';
+import 'package:mtc_sales_app/features/product/models/category.dart';
+import 'package:mtc_sales_app/features/product/models/brand.dart';
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final apiClient = ref.read(apiClientProvider);
   return ProductRepository(apiClient);
+});
+
+final categoriesProvider = FutureProvider<List<Category>>((ref) async {
+  final repository = ref.read(productRepositoryProvider);
+  return repository.getCategories();
+});
+
+final brandsProvider = FutureProvider<List<Brand>>((ref) async {
+  final repository = ref.read(productRepositoryProvider);
+  return repository.getBrands();
 });
 
 class ProductRepository {
@@ -27,6 +39,50 @@ class ProductRepository {
       }
     } catch (e) {
       throw Exception('Network error: $e');
+    }
+  }
+
+  Future<List<Category>> getCategories() async {
+    try {
+      final response = await _apiClient.get('category');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Category.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load categories');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<void> createCategory(String name) async {
+    try {
+      await _apiClient.post('category', data: {'name': name});
+    } catch (e) {
+      throw Exception('Failed to create category: $e');
+    }
+  }
+
+  Future<List<Brand>> getBrands() async {
+    try {
+      final response = await _apiClient.get('brand');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Brand.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load brands');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<void> createBrand(String name) async {
+    try {
+      await _apiClient.post('brand', data: {'name': name});
+    } catch (e) {
+      throw Exception('Failed to create brand: $e');
     }
   }
 
