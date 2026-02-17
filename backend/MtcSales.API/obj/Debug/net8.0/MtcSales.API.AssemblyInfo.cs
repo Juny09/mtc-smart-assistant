@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MtcSales.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ed969ac7abc8a884a89d27529e96376c6d92f69")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+959881f43d9a19f081cbc873baaaa14b832b7ee4")]
 [assembly: System.Reflection.AssemblyProductAttribute("MtcSales.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MtcSales.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
