@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/core/api/api_client.dart';
@@ -21,7 +22,7 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
 
   AdminProductNotifier(this._apiClient) : super(const AsyncValue.data(null));
 
-  Future<void> createProduct(Product product, File? imageFile) async {
+  Future<void> createProduct(Product product, XFile? imageFile) async {
     state = const AsyncValue.loading();
     try {
       // 1. Create Product
@@ -47,13 +48,20 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
 
       // 2. Upload Image if selected
       if (imageFile != null && productId != null) {
-        String fileName = imageFile.path.split('/').last;
-        FormData formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(
+        String fileName = imageFile.name;
+
+        MultipartFile multipartFile;
+        if (kIsWeb) {
+          final bytes = await imageFile.readAsBytes();
+          multipartFile = MultipartFile.fromBytes(bytes, filename: fileName);
+        } else {
+          multipartFile = await MultipartFile.fromFile(
             imageFile.path,
             filename: fileName,
-          ),
-        });
+          );
+        }
+
+        FormData formData = FormData.fromMap({'file': multipartFile});
 
         await _apiClient.post('product/$productId/images', data: formData);
       }
@@ -84,7 +92,7 @@ class _AdminProductCreateScreenState
   final _costCodeController = TextEditingController();
   int? _selectedCategoryId;
   int? _selectedBrandId;
-  File? _selectedImage;
+  XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -102,7 +110,7 @@ class _AdminProductCreateScreenState
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _selectedImage = File(image.path);
+        _selectedImage = image;
       });
     }
   }
@@ -240,7 +248,15 @@ class _AdminProductCreateScreenState
                   child: _selectedImage != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                          child: kIsWeb
+                              ? Image.network(
+                                  _selectedImage!.path,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(_selectedImage!.path),
+                                  fit: BoxFit.cover,
+                                ),
                         )
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
