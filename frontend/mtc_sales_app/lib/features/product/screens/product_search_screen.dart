@@ -218,6 +218,14 @@ class _ProductCardState extends ConsumerState<ProductCard> {
   }
 
   Future<void> _revealCost() async {
+    // If already visible, toggle it off
+    if (_isCostVisible) {
+      setState(() {
+        _isCostVisible = false;
+      });
+      return;
+    }
+
     final authService = ref.read(biometricServiceProvider);
 
     // Try biometric/device auth first
@@ -438,7 +446,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: _isCostVisible ? null : _revealCost,
+                      onTap: _revealCost,
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
