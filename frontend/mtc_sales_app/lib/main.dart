@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/core/theme/app_theme.dart';
 import 'package:mtc_sales_app/core/auth/login_screen.dart';
+import 'package:mtc_sales_app/core/auth/auth_service.dart';
+import 'package:mtc_sales_app/features/product/screens/product_search_screen.dart';
 import 'package:camera/camera.dart';
 
 List<CameraDescription> cameras = [];
@@ -24,8 +26,25 @@ class MtcSalesApp extends StatelessWidget {
     return MaterialApp(
       title: 'MTC Sales',
       theme: AppTheme.lightTheme,
-      home: const LoginScreen(), // Start with Login
+      home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+class AuthWrapper extends ConsumerWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userState = ref.watch(userProvider);
+
+    if (userState.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return userState.isAuthenticated
+        ? const ProductSearchScreen()
+        : const LoginScreen();
   }
 }
