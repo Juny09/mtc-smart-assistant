@@ -21,24 +21,25 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        builder =>
+        policy =>
         {
-            builder.AllowAnyOrigin()
+            policy.SetIsOriginAllowed(origin => true) // Allow any origin
                    .AllowAnyMethod()
-                   .AllowAnyHeader();
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // Allow credentials (cookies, auth headers)
         });
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors("AllowAll"); // CORS must be first
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("AllowAll");
 
 app.UseStaticFiles();
 
@@ -47,6 +48,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Health check endpoint
+app.MapGet("/", () => new { status = "online", version = "1.0.1", message = "MTC Sales API is running" });
+
 
 // Run schema update on startup (for MVP deployment)
 using (var scope = app.Services.CreateScope())
