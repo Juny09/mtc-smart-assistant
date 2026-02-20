@@ -16,6 +16,7 @@ class Product {
   final int? brandId;
   final String? categoryName;
   final String? brandName;
+  final int quantity;
 
   Product({
     this.id,
@@ -30,6 +31,7 @@ class Product {
     this.brandId,
     this.categoryName,
     this.brandName,
+    this.quantity = 0,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) =>

@@ -104,7 +104,8 @@ public class ProductController : ControllerBase
             CostCode = request.CostCode,
             ImageUrl = request.ImageUrl,
             CategoryId = request.CategoryId,
-            BrandId = request.BrandId
+            BrandId = request.BrandId,
+            Quantity = request.Quantity
         };
 
         // Auto-generate CostCode if missing
@@ -127,7 +128,10 @@ public class ProductController : ControllerBase
             product.Description ?? "",
             product.SuggestedPrice,
             product.ImageUrl ?? "",
-            product.Id
+            product.Id,
+            null,
+            null,
+            product.Quantity
         ));
     }
 
@@ -135,6 +139,7 @@ public class ProductController : ControllerBase
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts([FromQuery] string? keyword)
     {
         var query = _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.Brand)
             .AsQueryable();
@@ -156,7 +161,8 @@ public class ProductController : ControllerBase
                 p.ImageUrl ?? "",
                 p.Id,
                 p.Category != null ? p.Category.Name : null,
-                p.Brand != null ? p.Brand.Name : null
+                p.Brand != null ? p.Brand.Name : null,
+                p.Quantity
             ))
             .ToListAsync();
 
@@ -184,7 +190,8 @@ public class ProductController : ControllerBase
             product.ImageUrl ?? "",
             product.Id,
             product.Category?.Name,
-            product.Brand?.Name
+            product.Brand?.Name,
+            product.Quantity
         ));
     }
 
@@ -202,6 +209,8 @@ public class ProductController : ControllerBase
         product.Description = productDto.Description;
         product.SuggestedPrice = productDto.SuggestedPrice;
         product.ImageUrl = productDto.ImageUrl;
+        product.Quantity = productDto.Quantity;
+
         // Note: For simplicity, we are not updating cost price/code here yet, or category/brand
         // In a real app, you'd likely have a specific UpdateProductRequest DTO
 
@@ -237,6 +246,39 @@ public class ProductController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPost("batch-decrease-stock")]
+    public async Task<IActionResult> BatchDecreaseStock(List<ProductQuantityUpdate> updates)
+    {
+        if (updates == null || updates.Count == 0)
+        {
+            return BadRequest("No updates provided");
+        }
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var update in updates)
+            {
+                var product = await _context.Products.FindAsync(update.ProductId);
+                if (product != null)
+                {
+                    product.Quantity -= update.Quantity;
+                    // Optional: Prevent negative stock
+                    // if (product.Quantity < 0) product.Quantity = 0;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return StatusCode(500, $"Error updating stock: {ex.Message}");
+        }
     }
 
     private bool ProductExists(Guid id)

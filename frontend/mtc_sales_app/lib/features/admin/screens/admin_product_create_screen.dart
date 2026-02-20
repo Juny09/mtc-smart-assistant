@@ -38,6 +38,7 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
           'imageUrl': product.imageUrl,
           'categoryId': product.categoryId,
           'brandId': product.brandId,
+          'quantity': product.quantity,
         },
       );
 
@@ -74,6 +75,7 @@ class AdminProductNotifier extends StateNotifier<AsyncValue<void>> {
           'imageUrl': product.imageUrl,
           'categoryId': product.categoryId,
           'brandId': product.brandId,
+          'quantity': product.quantity,
         },
       );
 
@@ -123,6 +125,7 @@ class _AdminProductCreateScreenState
   final _priceController = TextEditingController();
   final _costController = TextEditingController();
   final _costCodeController = TextEditingController();
+  final _quantityController = TextEditingController();
   int? _selectedCategoryId;
   int? _selectedBrandId;
   XFile? _selectedImage;
@@ -138,6 +141,7 @@ class _AdminProductCreateScreenState
       _priceController.text = widget.product!.suggestedPrice.toString();
       _costController.text = widget.product!.costPrice?.toString() ?? '';
       _costCodeController.text = widget.product!.costCode ?? '';
+      _quantityController.text = widget.product!.quantity.toString();
       _selectedCategoryId = widget.product!.categoryId;
       _selectedBrandId = widget.product!.brandId;
     }
@@ -151,6 +155,7 @@ class _AdminProductCreateScreenState
     _priceController.dispose();
     _costController.dispose();
     _costCodeController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 
@@ -287,6 +292,7 @@ class _AdminProductCreateScreenState
           widget.product?.imageUrl ?? '', // Keep existing URL if not changed
       categoryId: _selectedCategoryId,
       brandId: _selectedBrandId,
+      quantity: int.tryParse(_quantityController.text) ?? 0,
     );
 
     if (isEditing) {
@@ -478,6 +484,21 @@ class _AdminProductCreateScreenState
                     ),
                   ),
                   const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _quantityController,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity (Stock)',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
                   Expanded(
                     child: TextFormField(
                       controller: _costController,

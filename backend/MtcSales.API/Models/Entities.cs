@@ -97,6 +97,9 @@ public class Product
     [MaxLength(20)]
     public string? CostCode { get; set; }
 
+    [Column("quantity")]
+    public int Quantity { get; set; } = 0;
+
     [Column("image_url")]
     public string? ImageUrl { get; set; }
 

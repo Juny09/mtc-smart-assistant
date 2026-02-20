@@ -123,10 +123,19 @@ class ProductRepository {
           'imageUrl': product.imageUrl,
           'categoryId': product.categoryId,
           'brandId': product.brandId,
+          'quantity': product.quantity,
         },
       );
     } catch (e) {
       throw Exception('Failed to update product: $e');
+    }
+  }
+
+  Future<void> batchDecreaseStock(List<Map<String, dynamic>> updates) async {
+    try {
+      await _apiClient.post('product/batch-decrease-stock', data: updates);
+    } catch (e) {
+      throw Exception('Failed to update stock: $e');
     }
   }
 }

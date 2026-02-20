@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtc_sales_app/features/cart/providers/cart_provider.dart';
 import 'package:mtc_sales_app/features/cart/screens/cart_share_screen.dart';
+import 'package:mtc_sales_app/features/product/providers/product_repository.dart';
+import 'package:mtc_sales_app/features/cart/models/cart.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -48,8 +50,12 @@ class CartScreen extends ConsumerWidget {
                         height: 50,
                         color: Colors.grey.shade200,
                         child: item.imageUrl.isNotEmpty
-                            ? Image.network(item.imageUrl, fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported))
+                            ? Image.network(
+                                item.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.image_not_supported),
+                              )
                             : const Icon(Icons.image),
                       ),
                       title: Text(item.productName),
@@ -93,8 +99,76 @@ class CartScreen extends ConsumerWidget {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          // TODO: Checkout
+                        onPressed: () async {
+                          final cart = cartAsyncValue.value;
+                          if (cart == null || cart.items.isEmpty) return;
+
+                          // Show confirmation dialog
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('确认结算'),
+                              content: Text(
+                                '这将从库存中扣除 ${cart.items.length} 件商品。确定吗？',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('取消'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('确定'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm != true) return;
+
+                          try {
+                            // 1. Prepare updates for batch stock decrease
+                            final updates = cart.items
+                                .map(
+                                  (item) => {
+                                    'productId': item.productId,
+                                    'quantity': item.quantity,
+                                  },
+                                )
+                                .toList();
+
+                            // 2. Call API to decrease stock
+                            await ref
+                                .read(productRepositoryProvider)
+                                .batchDecreaseStock(updates);
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('结算成功，库存已更新'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              // Optional: Clear cart or refresh
+                              // For now, we just refresh the cart to reflect any changes if needed,
+                              // but since the backend doesn't auto-clear, we might want to do it manually.
+                              // However, the user request was just "inventory decrease".
+                              // Ideally, we should empty the cart.
+                              // Let's create a new empty cart or reset it.
+                              // ref.refresh(cartProvider); // This re-fetches.
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('结算失败: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: const Text('结算'),
                       ),

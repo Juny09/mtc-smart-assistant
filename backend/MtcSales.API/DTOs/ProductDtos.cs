@@ -2,6 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MtcSales.API.DTOs;
 
+public class ProductQuantityUpdate
+{
+    public Guid ProductId { get; set; }
+    public int Quantity { get; set; }
+}
+
 public class CreateProductRequest
 {
     [Required]
@@ -24,6 +30,8 @@ public class CreateProductRequest
     public int? CategoryId { get; set; }
 
     public int? BrandId { get; set; }
+
+    public int Quantity { get; set; } = 0;
 }
 
 public class BrandDto
@@ -56,8 +64,9 @@ public class ProductDto
     public string ImageUrl { get; set; } = string.Empty;
     public string? CategoryName { get; set; }
     public string? BrandName { get; set; }
+    public int Quantity { get; set; }
 
-    public ProductDto(string code, string name, string description, decimal suggestedPrice, string imageUrl, Guid? id = null, string? categoryName = null, string? brandName = null)
+    public ProductDto(string code, string name, string description, decimal suggestedPrice, string imageUrl, Guid? id = null, string? categoryName = null, string? brandName = null, int quantity = 0)
     {
         Code = code;
         Name = name;
@@ -67,5 +76,6 @@ public class ProductDto
         Id = id;
         CategoryName = categoryName;
         BrandName = brandName;
+        Quantity = quantity;
     }
 }

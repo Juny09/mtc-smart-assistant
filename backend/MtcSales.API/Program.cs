@@ -57,12 +57,12 @@ using (var scope = app.Services.CreateScope())
         // For simple deployment, read SQL file and execute
         // In production, use EF Migrations properly: context.Database.Migrate();
         // But since we are "remote controlling", let's execute our idempotent script
-        var sqlPath = Path.Combine(AppContext.BaseDirectory, "schema_v4.sql");
+        var sqlPath = Path.Combine(AppContext.BaseDirectory, "schema_v5.sql");
         if (File.Exists(sqlPath))
         {
             var sql = File.ReadAllText(sqlPath);
             context.Database.ExecuteSqlRaw(sql);
-            Console.WriteLine("Schema updated successfully from schema_v4.sql");
+            Console.WriteLine("Schema updated successfully from schema_v5.sql");
         }
         else
         {
