@@ -651,6 +651,26 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                     ),
                 ],
               ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '库存: ${widget.product.quantity}',
+                    style: TextStyle(
+                      color: widget.product.quantity > 0
+                          ? Colors.black87
+                          : Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),

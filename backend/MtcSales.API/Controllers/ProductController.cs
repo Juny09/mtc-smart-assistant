@@ -196,7 +196,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(Guid id, ProductDto productDto)
+    public async Task<IActionResult> UpdateProduct(Guid id, UpdateProductRequest request)
     {
         var product = await _context.Products.FindAsync(id);
         if (product == null)
@@ -204,15 +204,29 @@ public class ProductController : ControllerBase
             return NotFound();
         }
 
-        product.Code = productDto.Code;
-        product.Name = productDto.Name;
-        product.Description = productDto.Description;
-        product.SuggestedPrice = productDto.SuggestedPrice;
-        product.ImageUrl = productDto.ImageUrl;
-        product.Quantity = productDto.Quantity;
+        product.Code = request.Code;
+        product.Name = request.Name;
+        product.Description = request.Description;
+        product.SuggestedPrice = request.SuggestedPrice;
+        product.ImageUrl = request.ImageUrl;
+        product.Quantity = request.Quantity;
+        
+        // Update other fields
+        product.CategoryId = request.CategoryId;
+        product.BrandId = request.BrandId;
+        product.CostPrice = request.CostPrice;
+        product.CostCode = request.CostCode;
 
-        // Note: For simplicity, we are not updating cost price/code here yet, or category/brand
-        // In a real app, you'd likely have a specific UpdateProductRequest DTO
+        // Auto-generate CostCode if missing
+        if (string.IsNullOrEmpty(product.CostCode) && product.CostPrice.HasValue)
+        {
+            product.CostCode = _priceCodeService.Encode(product.CostPrice.Value);
+        }
+        // Auto-decode CostPrice if missing
+        else if (!product.CostPrice.HasValue && !string.IsNullOrEmpty(product.CostCode))
+        {
+            product.CostPrice = _priceCodeService.Decode(product.CostCode);
+        }
 
         try
         {
