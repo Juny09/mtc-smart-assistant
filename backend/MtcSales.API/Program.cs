@@ -76,6 +76,15 @@ CREATE TABLE IF NOT EXISTS categories (
     CONSTRAINT ""FK_categories_categories_parent_id"" FOREIGN KEY (parent_id) REFERENCES categories (id)
 );
 
+CREATE TABLE IF NOT EXISTS product_images (
+    id uuid NOT NULL,
+    product_id uuid NOT NULL,
+    image_url text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    CONSTRAINT ""PK_product_images"" PRIMARY KEY (id),
+    CONSTRAINT ""FK_product_images_products_product_id"" FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+);
+
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'brand_id') THEN
@@ -92,6 +101,18 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'quantity') THEN
         ALTER TABLE products ADD COLUMN quantity integer NOT NULL DEFAULT 0;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'cost_price') THEN
+        ALTER TABLE products ADD COLUMN cost_price numeric;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'cost_code') THEN
+        ALTER TABLE products ADD COLUMN cost_code character varying(20);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'image_url') THEN
+        ALTER TABLE products ADD COLUMN image_url text;
     END IF;
 END $$;
 ";
