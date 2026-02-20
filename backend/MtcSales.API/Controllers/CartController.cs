@@ -42,34 +42,49 @@ public class CartController : ControllerBase
     [HttpPost("{id}/items")]
     public async Task<ActionResult<CartDto>> AddItem(Guid id, AddToCartRequest request)
     {
-        var cart = await _context.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
-        if (cart == null) return NotFound("Cart not found");
+        try
+        {
+            var cart = await _context.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+            if (cart == null) return NotFound("Cart not found");
 
-        var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
-        if (existingItem != null)
-        {
-            existingItem.Quantity += request.Quantity;
-        }
-        else
-        {
-            cart.Items.Add(new CartItem
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
+            if (existingItem != null)
             {
-                Id = Guid.NewGuid(),
-                CartId = id,
-                ProductId = request.ProductId,
-                Quantity = request.Quantity
-            });
+                existingItem.Quantity += request.Quantity;
+            }
+            else
+            {
+                // Verify product exists first to avoid FK error
+                var productExists = await _context.Products.AnyAsync(p => p.Id == request.ProductId);
+                if (!productExists)
+                {
+                    return BadRequest($"Product with ID {request.ProductId} not found");
+                }
+
+                cart.Items.Add(new CartItem
+                {
+                    Id = Guid.NewGuid(),
+                    CartId = id,
+                    ProductId = request.ProductId,
+                    Quantity = request.Quantity
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            
+            // Reload to get product details
+            var updatedCart = await _context.Carts
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                .FirstAsync(c => c.Id == id);
+
+            return Ok(MapToDto(updatedCart));
         }
-
-        await _context.SaveChangesAsync();
-        
-        // Reload to get product details
-        var updatedCart = await _context.Carts
-            .Include(c => c.Items)
-            .ThenInclude(i => i.Product)
-            .FirstAsync(c => c.Id == id);
-
-        return Ok(MapToDto(updatedCart));
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding item to cart: {ex}");
+            return StatusCode(500, $"Internal server error adding item: {ex.Message}");
+        }
     }
 
     private CartDto MapToDto(Cart cart)
