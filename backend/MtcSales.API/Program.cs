@@ -160,6 +160,10 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE carts ADD COLUMN customer_note text;
     END IF;
 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'carts' AND column_name = 'created_at') THEN
+        ALTER TABLE carts ADD COLUMN created_at timestamp with time zone NOT NULL DEFAULT NOW();
+    END IF;
+
     -- Cart Items Table Updates
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cart_items' AND column_name = 'added_at') THEN
         ALTER TABLE cart_items ADD COLUMN added_at timestamp with time zone NOT NULL DEFAULT NOW();
