@@ -115,7 +115,15 @@ using (var scope = app.Services.CreateScope())
     DO $$
     BEGIN
         -- Products Table Updates
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'brand_id') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'description') THEN
+        ALTER TABLE products ADD COLUMN description text;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'suggested_price') THEN
+        ALTER TABLE products ADD COLUMN suggested_price numeric NOT NULL DEFAULT 0;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'brand_id') THEN
             ALTER TABLE products ADD COLUMN brand_id integer;
             ALTER TABLE products ADD CONSTRAINT ""FK_products_brands_brand_id"" FOREIGN KEY (brand_id) REFERENCES brands (id);
             CREATE INDEX ""IX_products_brand_id"" ON products (brand_id);
